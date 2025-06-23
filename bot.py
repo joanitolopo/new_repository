@@ -12,13 +12,24 @@ bot = commands.Bot(command_prefix='!', intents=intents)
 async def on_ready():
     print(f'Logged in as {bot.user.name}')
 
+@bot.event
+async def on_message(message):
+    if message.author == bot.user:
+        return  # Mengabaikan pesan dari bot itu sendiri
+
+    if any(word.startswith('http') for word in message.content.split()):  # Memeriksa apakah pesan berisi tautan
+        await message.author.ban(reason="Dilarang mengirim tautan")  # Melarang penulis pesan
+        await message.channel.send(f"{message.author.mention} diblokir karena mengirim tautan.")  # Membuat pengumuman dalam obrolan
+
+    await bot.process_commands(message)  # Penting untuk memanggil fungsi ini agar perintah tetap berjalan
+
 @bot.command()
-async def start(ctx):
+async def start(ctx): # !star
     await ctx.send("Hi! I'm a chat manager bot!")
 
 @bot.command()
-@commands.has_permissions(ban_members=True)
-async def ban(ctx, member: discord.Member = None):
+@commands.has_permissions(ban_members=True) # comman !ban membutuhkan permission, apakah termasuk dalam member atau tidak
+async def ban(ctx, member: discord.Member = None): # !ban budi
     if member:
         if ctx.author.top_role <= member.top_role:
             await ctx.send("It is not possible to ban a user with equal or higher rank!")
